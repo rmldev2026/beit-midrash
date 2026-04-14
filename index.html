@@ -557,6 +557,29 @@
     </div>
   </div>
 
+  <!-- SLIDE 4: Zmanim -->
+  <div class="slide slide-zmanim" id="slide-4">
+    <div class="header">
+      <div class="shul-name">בית מדרש קרית יובל</div>
+      <div class="slide-subtitle">Horaires du jour</div>
+    </div>
+  
+    <div class="content" style="padding:20px; display:flex; justify-content:center;">
+      <div class="gold-box" style="width:100%; max-width:500px;">
+        <div class="gold-box-title">Horaires du jour (automatique)</div>
+  
+        <table class="prayer-table" id="zmanim-table">
+          <tr><td class="name">Alot Hashachar</td><td class="time" id="z-alot">--:--</td></tr>
+          <tr><td class="name">Lever du soleil</td><td class="time" id="z-netz">--:--</td></tr>
+          <tr><td class="name">Hatsot</td><td class="time" id="z-chatzot">--:--</td></tr>
+          <tr><td class="name">Mincha Gedola</td><td class="time" id="z-mincha-gedola">--:--</td></tr>
+          <tr><td class="name">Coucher du soleil</td><td class="time" id="z-shkia">--:--</td></tr>
+          <tr><td class="name">Tzeit</td><td class="time" id="z-tzeit">--:--</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Progress bar -->
@@ -693,6 +716,39 @@ function updateFromSheet(data) {
     }
   });
 }
+//SLIDE API HEBCAL
+async function loadZmanim(lat = 31.78, lng = 35.21) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const url = `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lng}&date=${today}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const zmanim = data.times;
+
+    function formatTime(iso) {
+      if (!iso) return "--:--";
+      const d = new Date(iso);
+      return d.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    document.getElementById("z-alot").textContent = formatTime(zmanim.alotHaShachar);
+    document.getElementById("z-netz").textContent = formatTime(zmanim.sunrise);
+    document.getElementById("z-chatzot").textContent = formatTime(zmanim.chatzot);
+    document.getElementById("z-mincha-gedola").textContent = formatTime(zmanim.minchaGedola);
+    document.getElementById("z-shkia").textContent = formatTime(zmanim.sunset);
+    document.getElementById("z-tzeit").textContent = formatTime(zmanim.tzeit85deg);
+
+  } catch (err) {
+    console.error("Erreur Hebcal :", err);
+    document.getElementById("errorBanner").style.display = "block";
+  }
+}
 
 // ===== SLIDES =====
 function buildDots() {
@@ -785,6 +841,7 @@ document.addEventListener('touchend', e => {
 });
 
 init();
+loadZmanim();
 </script>
 </body>
 </html>
